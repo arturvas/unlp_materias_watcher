@@ -1,6 +1,18 @@
+import os
+import time
 import requests
 from bs4 import BeautifulSoup
-import time
+from dotenv import load_dotenv
+
+# Carrega as variáveis do arquivo .env para o ambiente
+load_dotenv()
+
+# --- CONFIGURAÇÕES ---
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+
+GUARANI_USER = os.getenv('GUARANI_USER')
+GUARANI_PASS = os.getenv('GUARANI_PASS')
 
 # URLs do SIU Guaraní
 LOGIN_URL = 'https://autogestion.guarani.unlp.edu.ar/acceso'
@@ -16,10 +28,7 @@ def notificar_telegram(mensagem):
         print(f"Erro ao enviar Telegram: {e}")
 
 def buscar_vagas():
-    # Session mantém os cookies (PHPSESSID) vivos entre as requisições
     session = requests.Session()
-    
-    # Adicionando um User-Agent para parecer um navegador de verdade
     session.headers.update({
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     })
@@ -28,14 +37,13 @@ def buscar_vagas():
     res = session.get(LOGIN_URL)
     soup = BeautifulSoup(res.text, 'html.parser')
     
-    # O Guaraní geralmente pede um token csrf oculto no form de login.
-    # Vamos tentar achar ele dinamicamente:
+    # Extrai o token CSRF dinamicamente do form de login
     csrf_input = soup.find('input', {'name': '__csrf'})
     csrf_token = csrf_input['value'] if csrf_input else ''
 
-    # Montando os dados de login (verifique no Network do DevTools se os nomes dos campos são esses mesmos)
+    # payload de login (IMPORTANTE: confirme os nomes desses campos no HTML da tela de login)
     payload_login = {
-        'usuario': GUARANI_USER, # Pode ser 'identificacion' dependendo da versão do Toba
+        'usuario': GUARANI_USER, 
         'clave': GUARANI_PASS,
         '__csrf': csrf_token
     }
@@ -43,7 +51,6 @@ def buscar_vagas():
     print("2. Fazendo login...")
     res_login = session.post(LOGIN_URL, data=payload_login)
     
-    # Verifica se o login deu certo (geralmente redireciona ou muda o título da página)
     if "Inscripción a materias" not in res_login.text and "acceso" in res_login.url:
         print("Falha no login. Verifique as credenciais ou os nomes dos campos do formulário.")
         return
@@ -52,7 +59,6 @@ def buscar_vagas():
     res_materia = session.get(MATERIA_URL)
     soup_materia = BeautifulSoup(res_materia.text, 'html.parser')
 
-    # Parseando as comissões (Lógica que discutimos antes)
     comisiones = soup_materia.find_all('li', class_='comision')
     encontrou_vaga = False
 
@@ -62,10 +68,6 @@ def buscar_vagas():
             continue
         
         nome_comision = titulo_tag.text.strip()
-        
-        # Filtro opcional: Só processar se for Cátedra C
-        # if "Anatomía C" not in nome_comision:
-        #    continue
         
         divs_span9 = comision.find_all('div', class_='span9')
         for div in divs_span9:
@@ -87,15 +89,16 @@ def buscar_vagas():
     if not encontrou_vaga:
         print("Nenhuma vaga aberta no momento.")
 
-# Loop infinito para rodar localmente
 if __name__ == "__main__":
-    print("Iniciando rastreador da UNLP...")
-    while True:
-        try:
-            buscar_vagas()
-        except Exception as e:
-            print(f"Erro inesperado: {e}")
-        
-        # Espera 5 minutos (300 segundos) para não derrubar o servidor e tomar ban por IP
-        print("Aguardando 5 minutos para a próxima checagem...")
-        time.sleep(300)
+    if not all([TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, GUARANI_USER, GUARANI_PASS]):
+        print("Erro: Verifique se o arquivo .env está configurado corretamente com todas as variáveis.")
+    else:
+        print("Iniciando rastreador da UNLP...")
+        while True:
+            try:
+                buscar_vagas()
+            except Exception as e:
+                print(f"Erro inesperado: {e}")
+            
+            print("Aguardando 5 minutos para a próxima checagem...")
+            time.sleep(300)
