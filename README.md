@@ -70,7 +70,7 @@ GUARANI_PASS: Sua senha do site Guaraní UNLP.
 ## Como Usar
 
 ```bash
-python3 rastreador.py
+python3 tracker.py
 ```
 
 O terminal exibirá uma contagem regressiva e o status atual das turmas sendo monitoradas. Para interromper o script, pressione Ctrl + C no terminal.
