@@ -110,6 +110,10 @@ def buscar_vagas(session, tentativa):
                 try:
                     cupo_total = int(partes[0].strip())
                     inscritos = int(partes[1].strip())
+
+                    # MODO TESTE: forcando uma vaga
+                    # inscritos = inscritos - 1
+                    # -----------------------------
                     
                     print(f"[{nome_comision}] Cupo: {cupo_total} | Inscritos: {inscritos}")
                     
