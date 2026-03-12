@@ -1,5 +1,7 @@
 # SIU Guaraní Tracker - UNLP
 
+[Português](README.md) | [English](README.en.md)
+
 Un script de automatización desarrollado en Python para monitorear la disponibilidad de cupos en materias del sistema SIU Guaraní de la Universidad Nacional de La Plata (UNLP).
 
 El proyecto fue creado originalmente para rastrear la apertura de cupos en la concurrida materia de Anatomía (Cátedras B y C) y envía notificaciones en tiempo real a través de un bot de Telegram tan pronto como el número de inscritos sea menor que la capacidad de la comisión.

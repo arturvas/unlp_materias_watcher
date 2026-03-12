@@ -1,5 +1,7 @@
 # SIU Guaraní Tracker - UNLP
 
+[Português](README.md) | [Español](README.es.md)
+
 A Python automation script developed to monitor course availability in the SIU Guaraní system of the National University of La Plata (UNLP).
 
 Originally created to track openings in the highly competitive Anatomy course (Chairs B and C), it sends real-time notifications via a Telegram bot as soon as the number of enrollees is less than the class capacity.
